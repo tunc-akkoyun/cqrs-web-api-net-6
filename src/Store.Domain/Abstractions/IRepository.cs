@@ -15,7 +15,7 @@ public interface IRepository<T> where T : class
     Task<List<T>> GetAllAsync();
     Task<List<T>> GetAllAsync(Expression<Func<T, bool>> filter);
 
-    Task<PagedEntity<T>> GetAllPaged(Expression<Func<T, bool>> filter, int pageIndex = 0, int pageSize = int.MaxValue, bool getTotalCountOnly = false);
+    Task<PagedEntity<T>> GetAllPagedAsync(Expression<Func<T, bool>> filter, int pageIndex = 0, int pageSize = int.MaxValue, bool getTotalCountOnly = false);
 
     Task<T> GetAsync(int id);
     Task<T> GetAsync(Expression<Func<T, bool>> filter);

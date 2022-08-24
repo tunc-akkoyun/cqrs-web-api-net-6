@@ -36,7 +36,7 @@ public class EFRepository<T> : IRepository<T> where T : class
     public async Task<List<T>> GetAllAsync(Expression<Func<T, bool>> filter)
         => await _dbSet.Where(filter).ToListAsync();
 
-    public async Task<PagedEntity<T>> GetAllPaged(Expression<Func<T, bool>> filter, int pageIndex = 0, int pageSize = int.MaxValue, bool getTotalCountOnly = false)
+    public async Task<PagedEntity<T>> GetAllPagedAsync(Expression<Func<T, bool>> filter, int pageIndex = 0, int pageSize = int.MaxValue, bool getTotalCountOnly = false)
         => await _dbSet.Where(filter).ToPagedEntityListAsync(pageIndex, pageSize, getTotalCountOnly);
 
     public async Task<T> GetAsync(int id)

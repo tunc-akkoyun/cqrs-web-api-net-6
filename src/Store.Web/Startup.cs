@@ -1,9 +1,9 @@
 using System;
-using System.IO;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +14,7 @@ using Store.Domain.Abstractions;
 using Store.Infrastructure;
 using Store.Infrastructure.Repositories;
 using Store.Web.Middleware;
+using Store.Web.Utilities.Filters;
 
 namespace Store.Web;
 
@@ -38,10 +39,40 @@ public class Startup
 
         services.AddValidatorsFromAssembly(applicationAssembly);
 
+        services.AddSwaggerGenNewtonsoftSupport();
         services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Store API", Version = "v1" });
+            c.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Title = "Store API",
+                Version = $"{1}.{0}", //Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion,
+                Description = "# Introduction\n" +
+                "## About the API\n" +
+                "About the API."
+            });
+
+            c.TagActionsBy(api =>
+            {
+                if (api.GroupName != "Base")
+                    return new[] { api.GroupName };
+
+                var controllerActionDescriptor = api.ActionDescriptor as ControllerActionDescriptor;
+                if (controllerActionDescriptor != null)
+                    return new[] { controllerActionDescriptor.ControllerName };
+
+                throw new InvalidOperationException("Unable to determine tag for endpoint.");
+            });
+
+            c.DocInclusionPredicate((name, api) => true);
+            c.EnableAnnotations();
+            c.DocInclusionPredicate((_, api) => !string.IsNullOrWhiteSpace(api.GroupName));
+            c.DescribeAllParametersInCamelCase();
+
+            c.OperationFilter<AddHeaderOperationFilter>("authorization", "Bearer access token", "");
+            c.OperationFilter<AddHeaderOperationFilter>("correlation_id", "Correlation identifier for the request", "uuid");
+            c.SchemaFilter<SwaggerJsonIgnoreFilter>();
         });
+
 
         services.AddDbContext<ApplicationDbContext>(builder =>
             builder.UseSqlServer(Configuration.GetConnectionString("Application")));
@@ -58,12 +89,31 @@ public class Startup
         {
             app.UseDeveloperExceptionPage();
 
-            app.UseSwagger();
-
-            app.UseSwaggerUI(c =>
+            app.UseStaticFiles(new StaticFileOptions
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Store API");
-                c.RoutePrefix = string.Empty;
+                ServeUnknownFileTypes = false,
+                DefaultContentType = "text/plain"
+            });
+
+            app.UseSwagger(c =>
+            {
+                c.RouteTemplate = "docs/{documentName}/swagger.json";
+            });
+
+            app.UseReDoc(c =>
+            {
+                c.DocumentTitle = "Store API";
+                c.RoutePrefix = "docs";
+                c.SpecUrl("v1/swagger.json");
+                c.EnableUntrustedSpec();
+                c.ScrollYOffset(10);
+                c.HideDownloadButton();
+                c.ExpandResponses("200,201,204");
+                c.NoAutoAuth();
+                c.PathInMiddlePanel();
+                c.HideLoading();
+                c.NativeScrollbars();
+                c.OnlyRequiredInSamples();
             });
         }
 

@@ -2,10 +2,11 @@ using System;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Store.Application.Exceptions;
-using Store.Domain.Exceptions.Base;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Store.Application.Exceptions;
+using Store.Domain.Exceptions.Base;
+using Store.Presentation.Models;
 
 namespace Store.Web.Middleware;
 
@@ -40,26 +41,20 @@ internal sealed class ExceptionHandlingMiddleware : IMiddleware
             _ => StatusCodes.Status500InternalServerError
         };
 
-        var errors = Array.Empty<ApiError>();
+        var errors = Array.Empty<DetailedErrorResponse>();
 
         if (exception is ValidationException validationException)
         {
             errors = validationException.Errors
                 .SelectMany(
                     kvp => kvp.Value,
-                    (kvp, value) => new ApiError(kvp.Key, value))
+                    (kvp, value) => new DetailedErrorResponse(kvp.Key, value))
                 .ToArray();
         }
 
-        var response = new
-        {
-            status = httpContext.Response.StatusCode,
-            message = exception.Message,
-            errors
-        };
+        var response = new ErrorResponse(exception.Message, errors);
 
         await httpContext.Response.WriteAsync(JsonSerializer.Serialize(response));
     }
 
-    private record ApiError(string PropertyName, string ErrorMessage);
 }

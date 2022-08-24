@@ -21,7 +21,7 @@ internal sealed class GetProductsQueryHandler : IQueryHandler<GetProductsQuery, 
         CancellationToken cancellationToken)
     {
         var products = await _uow.GetRepository<Product>()
-            .GetAllPaged(w => (string.IsNullOrEmpty(request.name) || w.Name.Contains(request.name))
+            .GetAllPagedAsync(w => (string.IsNullOrEmpty(request.name) || w.Name.Contains(request.name))
                             && (request.includeDeleted || w.DeletedUTC == null),
                  request.pageIndex,
                  request.pageSize);
