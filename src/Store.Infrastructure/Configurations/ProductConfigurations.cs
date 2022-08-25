@@ -11,8 +11,9 @@ internal sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
     {
         builder.ToTable("Products");
 
-        builder.HasFullExtended();
+        builder.HasAuditExtended();
 
-        builder.Property(p => p.Name).HasMaxLength(100);
+        builder.HasIndex(p => p.Name);
+        builder.Property(p => p.Name).IsRequired().HasMaxLength(100);
     }
 }

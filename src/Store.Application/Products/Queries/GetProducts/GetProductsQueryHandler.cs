@@ -6,7 +6,7 @@ using Store.Application.Abstractions;
 using Store.Application.Abstractions.Messaging;
 using Store.Domain.Abstractions;
 using Store.Domain.Entities;
-using Store.Domain.Exceptions;
+using Store.Domain.Exceptions.Products;
 
 namespace Store.Application.Products.Queries.GetProducts;
 

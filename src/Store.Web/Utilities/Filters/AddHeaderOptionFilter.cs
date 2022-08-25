@@ -1,4 +1,8 @@
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -6,19 +10,6 @@ namespace Store.Web.Utilities.Filters;
 
 public class AddHeaderOperationFilter : IOperationFilter
 {
-    private readonly string _parameterName;
-    private readonly string _description;
-    private readonly string _format;
-    private readonly bool _required;
-
-    public AddHeaderOperationFilter(string parameterName, string description, string format, bool required = false)
-    {
-        _parameterName = parameterName;
-        _description = description;
-        _format = format;
-        _required = required;
-    }
-
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
         if (operation.Parameters == null)
@@ -26,15 +17,36 @@ public class AddHeaderOperationFilter : IOperationFilter
 
         operation.Parameters.Add(new OpenApiParameter
         {
-            Name = _parameterName,
+            Name = "correlation_id",
             In = ParameterLocation.Header,
-            Description = _description,
-            Required = _required,
+            Description = "Correlation identifier for the request",
+            Required = true,
             Schema = new()
             {
                 Type = "string",
-                Format = _format
+                Format = "uuid"
             }
         });
+
+        if (context.ApiDescription.ActionDescriptor is ControllerActionDescriptor descriptor)
+        {
+            // If [AllowAnonymous] is not applied or [Authorize] or Custom Authorization filter is applied on either the endpoint or the controller
+            if (!context.ApiDescription.CustomAttributes().Any((a) => a is AllowAnonymousAttribute)
+                && (context.ApiDescription.CustomAttributes().Any((a) => a is AuthorizeAttribute)
+                    || descriptor.ControllerTypeInfo.GetCustomAttribute<AuthorizeAttribute>() != null))
+            {
+                operation.Parameters.Add(new OpenApiParameter
+                {
+                    Name = "authorization",
+                    In = ParameterLocation.Header,
+                    Description = "Bearer access token",
+                    Required = true,
+                    Schema = new()
+                    {
+                        Type = "string"
+                    }
+                });
+            }
+        }
     }
 }

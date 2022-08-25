@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Store.Domain.Abstractions;
 using Store.Domain.Primitives;
 using Store.Infrastructure.Extensions;
+using Store.Infrastructure.Persistence;
 
 namespace Store.Infrastructure.Repositories;
 
@@ -44,6 +45,9 @@ public class EFRepository<T> : IRepository<T> where T : class
 
     public async Task<T> GetAsync(Expression<Func<T, bool>> filter)
         => await _dbSet.Where(filter).SingleOrDefaultAsync();
+
+    public async Task<bool> AnyAsync(Expression<Func<T, bool>> filter)
+        => await _dbSet.AnyAsync(filter);
 
     public void Add(T entity)
         => _dbSet.Add(entity);

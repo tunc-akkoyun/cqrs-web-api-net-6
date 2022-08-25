@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Store.Presentation.Models;
@@ -6,6 +7,7 @@ using Store.Presentation.Models;
 namespace Store.Presentation;
 
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 [Consumes("application/json")]
 [Produces("application/json")]

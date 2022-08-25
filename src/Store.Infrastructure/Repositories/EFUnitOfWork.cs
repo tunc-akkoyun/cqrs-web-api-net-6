@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Store.Domain.Abstractions;
+using Store.Infrastructure.Persistence;
 
 namespace Store.Infrastructure.Repositories;
 

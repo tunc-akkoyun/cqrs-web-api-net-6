@@ -1,7 +1,7 @@
 using System;
 using Store.Domain.Exceptions.Base;
 
-namespace Store.Domain.Exceptions;
+namespace Store.Domain.Exceptions.Products;
 
 public sealed class ProductNotFoundException : NotFoundException
 {

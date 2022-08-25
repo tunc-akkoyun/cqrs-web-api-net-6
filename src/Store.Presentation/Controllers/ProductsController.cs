@@ -2,7 +2,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Mapster;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Store.Application.Abstractions;
 using Store.Application.Products.Commands.CreateProduct;
@@ -12,7 +11,7 @@ using Store.Application.Products.Queries.GetProductByHash;
 using Store.Application.Products.Queries.GetProducts;
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace Store.Presentation;
+namespace Store.Presentation.Controllers;
 
 /// <summary>
 /// Represents the products controller.
@@ -35,36 +34,24 @@ public sealed class ProductsController : ApiController
     [HttpPost]
     [SwaggerResponse(201)]
     [SwaggerOperation(Summary = "Create", Description = "Creates a new product based on the specified request.", OperationId = "createProduct")]
-    public async Task<IActionResult> CreateProduct(
-        [FromBody] CreateProductRequest request,
-        CancellationToken cancellationToken)
-    {
-        var result = await Sender.Send(request.Adapt<CreateProductCommand>(), cancellationToken);
-
-        return CreatedAtAction(nameof(GetProduct), result);
-    }
+    public async Task<IActionResult> CreateProduct([FromBody] CreateProductRequest request, CancellationToken cancellationToken)
+        => Created(nameof(CreateProduct), await Sender.Send(request.Adapt<CreateProductCommand>(), cancellationToken));
 
     [HttpPut]
     [SwaggerResponse(204)]
     [SwaggerOperation(Summary = "Update", Description = "Updates a product based on the specified request.", OperationId = "updateProduct")]
-    public async Task<IActionResult> UpdateProduct(
-        [FromBody] UpdateProductRequest request,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> UpdateProduct([FromBody] UpdateProductRequest request, CancellationToken cancellationToken)
     {
         await Sender.Send(request.Adapt<UpdateProductCommand>(), cancellationToken);
-
         return NoContent();
     }
 
     [HttpDelete]
     [SwaggerResponse(204)]
     [SwaggerOperation(Summary = "Delete", Description = "Deletes a product based on the specified request.", OperationId = "deleteProduct")]
-    public async Task<IActionResult> DeleteProduct(
-        [FromBody] DeleteProductRequest request,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> DeleteProduct([FromBody] DeleteProductRequest request, CancellationToken cancellationToken)
     {
         await Sender.Send(request.Adapt<DeleteProductCommand>(), cancellationToken);
-
         return NoContent();
     }
 }
